@@ -1,0 +1,27 @@
+# Nextflow core
+work/
+.nextflow/
+.nextflow.log*
+
+# Output and input data
+smRNA_results/
+filtered/
+dge/
+targets/
+enrichment/
+plots/
+input/*
+!input/metadata/
+input/metadata/*
+!input/metadata/metadata_template.csv
+
+# Large files and figures
+*.rds
+*.csv
+*.xlsx
+*.pdf
+*.png
+
+# Python/OS caches
+__pycache__/
+.DS_Store

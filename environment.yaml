@@ -1,0 +1,30 @@
+name: nf-rnaseq
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  # Python dependencies for csv_to_xlsx.py
+  - python=3.10
+  - pandas
+  - openpyxl
+
+  # Core R and data manipulation
+  - r-base
+  - r-optparse      # For parsing command-line arguments
+  - r-tidyverse     # Includes dplyr, readr, etc.
+  - r-statmod
+
+  # Bioconductor packages for downstream RNA-seq and miRNA analysis
+  - bioconductor-edger
+  - bioconductor-limma
+  - bioconductor-clusterprofiler
+  - bioconductor-org.hs.eg.db
+  - bioconductor-enrichplot  # For plotting enrichment results
+  - bioconductor-multimir    # For miRNA-target interactions
+  - bioconductor-enhancedvolcano
+
+  # Plotting libraries
+  - r-ggplot2       # Explicitly added for standard plotting
+  - r-pheatmap
+  - r-ggrepel
