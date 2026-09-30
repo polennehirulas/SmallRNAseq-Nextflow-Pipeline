@@ -406,7 +406,7 @@ for (j in seq_len(ncol(logtpm))) {
 
 cat("\n--- Final matrix orientation ---\n")
 cat("Samples:", nrow(counts), "\n")
-cat("Mature miRNAs:", ncol(counts), "\n")filterby
+cat("Mature miRNAs:", ncol(counts), "\n")
 
 # ---------------------------------------------------------
 # Metadata matching

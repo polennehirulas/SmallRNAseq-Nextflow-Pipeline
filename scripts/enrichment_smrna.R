@@ -5,6 +5,7 @@ suppressPackageStartupMessages(library(clusterProfiler))
 suppressPackageStartupMessages(library(org.Hs.eg.db))
 suppressPackageStartupMessages(library(enrichplot))
 suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(stringr))
 
 option_list <- list(
   make_option(c("--targets"), type = "character", help = "CSV containing target_entrez"),
@@ -86,50 +87,130 @@ if (!is.null(opt$ont)) {
   write.csv(ego_df, file.path(opt$outdir, csv_name), row.names = FALSE)
 
   if (nrow(ego_df) > 0) {
-    go_plot <- dotplot(ego, showCategory = 20, title = title_text) +
-      theme(plot.title = element_text(hjust = 0.5, face = "bold"))
-    ggsave(file.path(opt$outdir, plot_name), go_plot, width = 9, height = 7, dpi = 300)
-  } else {
-    save_blank_plot(file.path(opt$outdir, plot_name), paste(title_text, "- No significant pathways"))
-  }
 
-  quit(save = "no", status = 0)
+    go_plot <- dotplot(
+      ego,
+      showCategory = 20,
+      title = title_text
+    ) +
+      scale_y_discrete(
+        labels = function(x) stringr::str_wrap(x, width = 50)
+      ) +
+      theme(
+        plot.title = element_text(hjust = 0.5, face = "bold")
+      )
+
+    n_terms <- min(20, nrow(ego_df))
+    plot_height <- max(4.5, min(8, nrow(ego_df) * 0.30))
+
+    ggsave(
+      file.path(opt$outdir, plot_name),
+      go_plot,
+      width = 9,
+      height = plot_height,
+      dpi = 300
+    )
+
+  } else {
+
+    save_blank_plot(
+      file.path(opt$outdir, plot_name),
+      paste0(
+        "GO ",
+        ont,
+        " Enrichment - No significant terms"
+      )
+    )
+  }
 }
 
+
+# ============================================================
+# KEGG ENRICHMENT
+# ============================================================
+
 if (isTRUE(opt$kegg)) {
+
   csv_name <- "KEGG_enrichment_results.csv"
   plot_name <- "KEGG_dotplot.png"
 
   if (length(entrez_ids) == 0) {
-    write.csv(data.frame(), file.path(opt$outdir, csv_name), row.names = FALSE)
-    save_blank_plot(file.path(opt$outdir, plot_name), "KEGG Pathway Enrichment - No target genes available")
+
+    write.csv(
+      data.frame(),
+      file.path(opt$outdir, csv_name),
+      row.names = FALSE
+    )
+
+    save_blank_plot(
+      file.path(opt$outdir, plot_name),
+      "KEGG Pathway Enrichment - No target genes available"
+    )
+
     quit(save = "no", status = 0)
   }
 
   enrichment_args <- list(
-  gene = entrez_ids,
-  organism = "hsa",
-  pAdjustMethod = "BH"
+    gene = entrez_ids,
+    organism = "hsa",
+    pAdjustMethod = "BH"
   )
 
   if (opt$significance == "pvalue") {
+
     enrichment_args$pvalueCutoff <- opt$cutoff
     enrichment_args$qvalueCutoff <- 1
+
   } else {
+
     enrichment_args$pvalueCutoff <- 1
     enrichment_args$qvalueCutoff <- opt$cutoff
   }
 
   ekegg <- do.call(enrichKEGG, enrichment_args)
 
-  ekegg_df <- if (!is.null(ekegg)) as.data.frame(ekegg) else data.frame()
-  write.csv(ekegg_df, file.path(opt$outdir, csv_name), row.names = FALSE)
+  ekegg_df <- if (!is.null(ekegg)) {
+    as.data.frame(ekegg)
+  } else {
+    data.frame()
+  }
+
+  write.csv(
+    ekegg_df,
+    file.path(opt$outdir, csv_name),
+    row.names = FALSE
+  )
 
   if (nrow(ekegg_df) > 0) {
-    kegg_plot <- dotplot(ekegg, showCategory = 20, title = "KEGG Pathway Enrichment") +
-      theme(plot.title = element_text(hjust = 0.5, face = "bold"))
-    ggsave(file.path(opt$outdir, plot_name), kegg_plot, width = 9, height = 7, dpi = 300)
+
+    kegg_plot <- dotplot(
+      ekegg,
+      showCategory = 20,
+      title = "KEGG Pathway Enrichment"
+    ) +
+      scale_y_discrete(
+        labels = function(x) stringr::str_wrap(x, width = 50)
+      ) +
+      theme(
+        plot.title = element_text(hjust = 0.5, face = "bold")
+      )
+
+    n_terms <- min(20, nrow(ekegg_df))
+    plot_height <- max(4.5, min(8, nrow(ekegg_df) * 0.30))
+
+    ggsave(
+      file.path(opt$outdir, plot_name),
+      kegg_plot,
+      width = 9,
+      height = plot_height,
+      dpi = 300
+    )
+
   } else {
-    save_blank_plot(file.path(opt$outdir, plot_name), "KEGG Pathway Enrichment - No significant pathways")
+
+    save_blank_plot(
+      file.path(opt$outdir, plot_name),
+      "KEGG Pathway Enrichment - No significant pathways"
+    )
   }
 }
